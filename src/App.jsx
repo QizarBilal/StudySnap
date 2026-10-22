@@ -5,6 +5,7 @@ import { CalendarPage, SubjectsPage, FocusPage, GoalsPage, InsightsPage, Setting
 import { PlansPage, AssessmentsPage, ResourcesPage, CollaborationPage, ReportsPage, OnboardingPage, HelpPage, OrganizationPage, AccountPage, AccessibilityPage } from "./components/ProductPages.jsx";
 import { CloudAccountPage, IntegrationsPage, BillingPage, FeedbackPage, AdminPage, AcceptInvitationPage, ResetPasswordPage, OrganizationCloudPage } from "./components/BusinessPages.jsx";
 import { api, jsonBody } from "./lib/api.js";
+import { CoursesPage, WeekPlanPage, ReviewPage } from "./components/StudyExtensions.jsx";
 
 const STORAGE_KEY = "studysnap_tasks_v2";
 const SUBJECTS = ["Mathematics", "Science", "Computer science", "Languages", "History", "React", "JavaScript", "Python", "Database", "Other"];
@@ -151,20 +152,27 @@ function App() {
   return <div className="app-shell">
     <aside className="sidebar">
       <Link className="brand" to="/"><span className="brand-mark">S</span><span><strong>StudySnap</strong><small>YOUR LEARNING SPACE</small></span></Link>
-      <p className="nav-label">WORKSPACE</p>
+      <p className="nav-label">STUDY</p>
       <nav aria-label="Main navigation">
         <NavLink to="/" end><span className="nav-icon">⌂</span>Overview</NavLink>
         <NavLink to="/tasks"><span className="nav-icon">▤</span>My tasks<span className="nav-count">{pendingCount}</span></NavLink>
-        <NavLink to="/calendar"><span className="nav-icon">▦</span>Calendar</NavLink>
-        <NavLink to="/subjects"><span className="nav-icon">◫</span>Subjects</NavLink>
-        <NavLink to="/focus"><span className="nav-icon">◷</span>Focus room</NavLink>
-        <NavLink to="/goals"><span className="nav-icon">◎</span>Goals</NavLink>
-        <NavLink to="/insights"><span className="nav-icon">↗</span>Insights</NavLink>
-        <NavLink to="/plans"><span className="nav-icon">↻</span>Study plans</NavLink>
-        <NavLink to="/assessments"><span className="nav-icon">◇</span>Exams & work</NavLink>
-        <NavLink to="/resources"><span className="nav-icon">↗</span>Notes & links</NavLink>
-        <NavLink to="/groups"><span className="nav-icon">♧</span>Study groups</NavLink>
-        <NavLink to="/reports"><span className="nav-icon">▥</span>Reports</NavLink>
+        <NavLink to="/week"><span className="nav-icon">▦</span>Week plan</NavLink>
+        <NavLink to="/courses"><span className="nav-icon">◫</span>My courses</NavLink>
+        <details className="nav-group"><summary>More study tools</summary><div>
+          <NavLink to="/calendar"><span className="nav-icon">▦</span>Calendar</NavLink>
+          <NavLink to="/focus"><span className="nav-icon">◷</span>Focus room</NavLink>
+          <NavLink to="/assessments"><span className="nav-icon">◇</span>Exams & work</NavLink>
+          <NavLink to="/review"><span className="nav-icon">✧</span>Revision cards</NavLink>
+          <NavLink to="/subjects"><span className="nav-icon">◫</span>Subjects</NavLink>
+          <NavLink to="/goals"><span className="nav-icon">◎</span>Goals</NavLink>
+          <NavLink to="/insights"><span className="nav-icon">↗</span>Insights</NavLink>
+          <NavLink to="/plans"><span className="nav-icon">↻</span>Study plans</NavLink>
+          <NavLink to="/resources"><span className="nav-icon">↗</span>Notes & links</NavLink>
+          <NavLink to="/groups"><span className="nav-icon">♧</span>Study groups</NavLink>
+          <NavLink to="/reports"><span className="nav-icon">▥</span>Reports</NavLink>
+        </div></details>
+      </nav>
+      <details className="nav-group account-group"><summary>Account & workspace</summary><div>
         <NavLink to="/organization"><span className="nav-icon">▦</span>Organization</NavLink>
         <NavLink to="/cloud"><span className="nav-icon">☁</span>Cloud account</NavLink>
         <NavLink to="/integrations"><span className="nav-icon">↗</span>Integrations</NavLink>
@@ -176,7 +184,7 @@ function App() {
         <NavLink to="/help"><span className="nav-icon">?</span>Help center</NavLink>
         <NavLink to="/settings"><span className="nav-icon">⚙</span>Settings</NavLink>
         <NavLink to="/onboarding"><span className="nav-icon">✦</span>Getting started</NavLink>
-      </nav>
+      </div></details>
       <div className="sidebar-bottom"><div className="focus-card"><span className="focus-spark">✳</span><strong>Small steps add up.</strong><p>Your next focused session is a good place to start.</p></div><span className="sidebar-foot">Made for curious minds <span>✦</span></span></div>
     </aside>
     <div className="main-column">
@@ -187,7 +195,7 @@ function App() {
           <Route path="/" element={<>
             {!profile.completed && <Link className="onboarding-callout" to="/onboarding"><span>✦</span><div><strong>Make StudySnap yours</strong><small>Set your name, role, and study goal to personalize your space.</small></div><b>→</b></Link>}
             <section className="hero"><div className="hero-copy"><p className="eyebrow"><span className="eyebrow-dot" /> YOUR PERSONAL STUDY PLANNER</p><h1>Make room for<br /><em>your next big idea.</em></h1><p className="hero-text">A little structure goes a long way. Choose what matters today and keep your learning momentum going.</p><a className="hero-link" href="#create-task">Plan a study task <span>↘</span></a></div><div className="hero-art" aria-hidden="true"><div className="art-orbit orbit-one"/><div className="art-orbit orbit-two"/><div className="book-stack"><div className="book book-back"/><div className="book book-mid"/><div className="book book-front"><span>✦</span><i>STUDY<br/>NOTES</i></div></div><span className="art-star star-one">✳</span><span className="art-star star-two">✧</span><span className="art-squiggle">〰</span><span className="art-label">ONE THING<br/>AT A TIME</span></div></section>
-            <section className="stats" aria-label="Study statistics"><article className="stat-card stat-total"><div className="stat-top"><span className="stat-icon">▤</span><span className="stat-caption">ALL TIME</span></div><strong>{tasks.length}</strong><p>Tasks in your plan</p></article><article className="stat-card stat-done"><div className="stat-top"><span className="stat-icon">✓</span><span className="stat-caption">NICE WORK</span></div><strong>{completedCount}</strong><p>Sessions completed</p></article><article className="stat-card stat-focus"><div className="stat-top"><span className="stat-icon">◷</span><span className="stat-caption">UP NEXT</span></div><strong>{Math.floor(minutesPlanned / 60)}<small>h</small> {minutesPlanned % 60}<small>m</small></strong><p>Estimated study time</p></article><article className="stat-card stat-progress"><div className="stat-top"><span className="stat-icon">↗</span><span className="stat-caption">YOUR MOMENTUM</span></div><strong>{progress}<small>%</small></strong><div className="progress-track"><span style={{ width: `${progress}%` }} /></div><p>{dueToday ? `${dueToday} due today` : "Keep the streak going"}</p></article></section>
+            <section className="stats" aria-label="Study statistics"><article className="stat-card stat-total"><div className="stat-top"><span className="stat-icon">▤</span><span className="stat-caption">ALL TIME</span></div><strong>{tasks.length}</strong><p>Tasks in your plan</p></article><article className="stat-card stat-done"><div className="stat-top"><span className="stat-icon">✓</span><span className="stat-caption">NICE WORK</span></div><strong>{completedCount}</strong><p>Tasks completed</p></article><article className="stat-card stat-focus"><div className="stat-top"><span className="stat-icon">◷</span><span className="stat-caption">UP NEXT</span></div><strong>{Math.floor(minutesPlanned / 60)}<small>h</small> {minutesPlanned % 60}<small>m</small></strong><p>Estimated study time</p></article><article className="stat-card stat-progress"><div className="stat-top"><span className="stat-icon">↗</span><span className="stat-caption">YOUR MOMENTUM</span></div><strong>{progress}<small>%</small></strong><div className="progress-track"><span style={{ width: `${progress}%` }} /></div><p>{dueToday ? `${dueToday} due today` : "Keep the streak going"}</p></article></section>
             <section className="content-grid"><div className="panel form-panel" id="create-task"><div className="section-heading"><div><p className="eyebrow">A PLAN THAT FEELS DOABLE</p><h2>Add a study task</h2></div><span className="heading-decoration">✳</span></div><form onSubmit={addTask}>
               <label htmlFor="task-title">What would you like to work on?</label><input id="task-title" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="e.g. Review chapter 4 notes" maxLength={120} required />
               <div className="form-row"><div><label htmlFor="subject">Subject</label><select id="subject" value={subject} onChange={(event) => setSubject(event.target.value)}>{subjects.map((name) => <option key={name}>{name}</option>)}</select></div><div><label htmlFor="priority">Priority</label><select id="priority" value={priority} onChange={(event) => setPriority(event.target.value)}><option>Low</option><option>Medium</option><option>High</option></select></div></div>
@@ -199,6 +207,9 @@ function App() {
           <Route path="/tasks" element={<section className="panel page-panel"><div className="page-heading"><div><p className="eyebrow">YOUR LEARNING, AT YOUR PACE</p><h1 className="page-title">My study tasks</h1><p className="page-subtitle">Everything you want to learn, all in one place.</p></div><a className="primary-button compact-cta" href="/#create-task">＋ Add a task</a></div><div className="task-toolbar"><div className="filters" aria-label="Filter tasks">{["All", "Pending", "Completed"].map((item) => <button key={item} className={filter === item ? "filter-button active" : "filter-button"} onClick={() => setFilter(item)}>{item}<span>{item === "All" ? tasks.length : item === "Pending" ? pendingCount : completedCount}</span></button>)}</div><label className="search-box"><span>⌕</span><input aria-label="Search tasks" placeholder="Search your plan" value={query} onChange={(event) => setQuery(event.target.value)} /></label></div>{taskList()}</section>} />
           <Route path="/about" element={<section className="about-card panel"><span className="about-symbol">✳</span><p className="eyebrow">A LITTLE ABOUT US</p><h1>Progress, at your pace.</h1><p>StudySnap is your calm corner for turning big learning goals into small, satisfying steps. Plan a session, make it yours, and celebrate the work you get done.</p><div className="about-values"><div><strong>01</strong><span>Keep your plan<br/>simple and clear</span></div><div><strong>02</strong><span>Make time for<br/>what matters</span></div><div><strong>03</strong><span>Notice every<br/>bit of progress</span></div></div><div className="technology"><span>BUILT WITH</span><strong>React · JavaScript · Thoughtful planning</strong></div></section>} />
           <Route path="/calendar" element={<CalendarPage tasks={tasks} updateTask={updateTask} deleteTask={deleteTask} locale={preferences.language} onRemindersEnabled={() => setReminderRevision((value) => value + 1)} />} />
+          <Route path="/week" element={<WeekPlanPage tasks={tasks} updateTask={updateTask} />} />
+          <Route path="/courses" element={<CoursesPage tasks={tasks} subjects={subjects} />} />
+          <Route path="/review" element={<ReviewPage subjects={subjects} />} />
           <Route path="/subjects" element={<SubjectsPage tasks={tasks} subjects={subjects} setSubjects={setSubjects} />} />
           <Route path="/focus" element={<FocusPage onSession={(session) => setSessions((previous) => [session, ...previous])} />} />
           <Route path="/goals" element={<GoalsPage goals={goals} setGoals={setGoals} tasks={tasks} />} />
